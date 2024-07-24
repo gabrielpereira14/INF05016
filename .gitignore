@@ -30,3 +30,27 @@
 *.exe
 *.out
 *.app
+
+# Test files
+**/input
+**/output
+*.txt
+*.csv
+**/scripts
+*.py
+*.gr
+*.mtx
+**/*-main
+
+
+*.pdf
+*.zip
+**/*Trabalho*
+**/*Entrega*
+**/*stats*
+
+# IDEs
+**/.vs
+**/.vscode
+
+

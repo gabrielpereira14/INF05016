@@ -1,0 +1,105 @@
+/**
+ * \file gen.cpp
+ *   \author Marcus Ritt <mrpritt@inf.ufrgs.br> 
+ *   \date Time-stamp: <2011-08-24 15:17:49 ritt>
+ */
+
+#include <cstdlib>
+#include <cmath>
+#include <iostream>
+#include <cassert>
+#include <fstream>
+using namespace std;
+
+
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/connected_components.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
+
+using namespace boost;
+
+#if !(_SVID_SOURCE || _XOPEN_SOURCE)
+double drand48(void) {
+    return rand() / (RAND_MAX + 1.0);
+}
+
+long int lrand48(void) {
+    return rand();
+}
+
+long int mrand48(void) {
+    return rand() > RAND_MAX / 2 ? rand() : -rand();
+}
+
+void srand48(long int seedval) {
+    srand(seedval);
+}
+#endif
+
+// information stored in vertices
+struct VertexInformation {
+  unsigned component;
+};
+ 
+// information stored in edges
+struct EdgeInformation {
+  unsigned weight;
+};
+ 
+const unsigned maxweight = 1000;
+ 
+// graph is an adjacency list represented by vectors
+typedef adjacency_list<vecS, vecS, directedS,VertexInformation,EdgeInformation> Graph;
+typedef graph_traits<Graph>::vertex_descriptor Node;
+typedef graph_traits <Graph>::edge_descriptor Edge;
+ 
+int main(int argc, char *argv[]) {
+  assert(argc == 4);
+  unsigned n = atoi(argv[1]);
+  float p = atof(argv[2]) * 100;
+  FILE* f = fopen(argv[3],"w");
+  
+  size_t i = 0, j = 0;
+
+  fclose(f); 
+  srand48(time(0));
+
+  // (1) generate random graph
+  Graph g;
+  for(unsigned i=0; i<n; i++)
+    add_vertex(g);
+
+
+  unsigned int target_group_start =  std::floor((n-1)/2);
+  for(i = 0; i < target_group_start; i ++){
+    for( j = target_group_start ; j < n ; j++){
+      if (( rand() % 100) <= p){
+        Edge e = add_edge(i,j,g).first;
+        g[e].weight = lrand48()%maxweight;
+      }
+    }
+  }
+
+  // (2) print example path
+  std::ofstream fileOut(argv[3]);
+  // Redirect cout to write to "output.txt"
+  std::cout.rdbuf(fileOut.rdbuf());
+
+  unsigned src = lrand48()%num_vertices(g);
+ 
+  vector<unsigned> dist(n);
+  vector<unsigned> pred(n);
+  
+  std::cerr << "";
+  dijkstra_shortest_paths(g,src,weight_map(get(&EdgeInformation::weight,g)).distance_map(&dist[0]).predecessor_map(&pred[0]));
+ 
+  //std::cerr << "Distance between " << src+1 << " and " << dst+1 << " is " << dist[dst] << endl;
+ 
+  // (3) print out in DIMACS challenge format
+  std::cout << "p match " << num_vertices(g) << " " << num_edges(g) << endl;
+  graph_traits<Graph>::edge_iterator eb, ee;
+  for ( tie(eb, ee)=edges(g); eb != ee; eb++)
+    cout << "a " << source(*eb,g)+1 << " " << target(*eb, g)+1 << " " << g[*eb].weight << endl;
+}
