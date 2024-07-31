@@ -7,7 +7,7 @@ typedef bool (* matrixComp)(const std::vector<std::vector<int>>& A, const std::v
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 
-#define FREIVALDS_ITERATIONS 50
+#define FREIVALDS_ITERATIONS 1
 
 void matrixVectorMultiplication(const std::vector<std::vector<int>>& matrix, 
                                 const std::vector<int>& vector, 
@@ -16,6 +16,7 @@ void matrixVectorMultiplication(const std::vector<std::vector<int>>& matrix,
     int cols = matrix[0].size();
 
     for (int i = 0; i < rows; ++i) {
+        result[i] = 0;
         for (int j = 0; j < cols; ++j) {
             result[i] += matrix[i][j] * vector[j];
         }
@@ -62,16 +63,16 @@ bool freivalds(const std::vector<std::vector<int>>& A,
 
         for (size_t i = 0; i < size; i++)
         {
-            if(ABr[i] - Cr[i] != 0){
+            if((ABr[i] - Cr[i]) != 0){
                 answer = false;
             } 
+         
         }
     }
-
     return answer;
 }
 
-std::vector<std::vector<int>> mulMat(const std::vector<std::vector<int>>& mat1, 
+void mulMat(const std::vector<std::vector<int>>& mat1, 
             const std::vector<std::vector<int>>& mat2,
             std::vector<std::vector<int>>& result) {
     int size = mat1.size();
@@ -84,8 +85,6 @@ std::vector<std::vector<int>> mulMat(const std::vector<std::vector<int>>& mat1,
             }
         }
     }
-
-    return result;
 }
 
 bool matMultComp(const std::vector<std::vector<int>>& A, 
@@ -135,33 +134,37 @@ std::chrono::duration<long long, std::micro> getMatrixComparationTime(  const st
     return duration_cast<std::chrono::microseconds>(t2 - t1);
 }
 
+void printMatrix(const std::vector<std::vector<int>>& mat){
+    for (const auto& row : mat) {
+        for (const auto& elem : row) {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
 int main(){
     //const int size = 9; const std::vector<std::vector<int>> A ={ {41, 67, 34, 0, 69, 24, 78, 58, 62 }, {64, 5, 45, 81, 27, 61, 91, 95, 42 }, {27, 36, 91, 4, 2, 53, 92, 82, 21 }, {16, 18, 95, 47, 26, 71, 38, 69, 12 }, {67, 99, 35, 94, 3, 11, 22, 33, 73 }, {64, 41, 11, 53, 68, 47, 44, 62, 57 }, {37, 59, 23, 41, 29, 78, 16, 35, 90 }, {42, 88, 6, 40, 42, 64, 48, 46, 5 }, {90, 29, 70, 50, 6, 1, 93, 48, 29 }}; const std::vector<std::vector<int>> B ={ { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, 1, 1, 1, 1, 1, 1}}; const std::vector<std::vector<int>> C ={ {433, 433, 433, 433, 433, 433, 433, 433, 433 },{511, 511, 511, 511, 511, 511, 511, 511, 511 },{408, 408, 408, 408, 408, 408, 408, 408, 408 },{392, 392, 392, 392, 392, 392, 392, 392, 392 },{437, 437, 437, 437, 437, 437, 437, 437, 437 },{447, 447, 447, 447, 447, 447, 447, 447, 447 },{408, 408, 408, 408, 408, 408, 408, 408, 408 },{381, 381, 381, 381, 381, 381, 381, 381, 381 },{416, 416, 416, 415, 416, 416, 416, 416, 416 }};
-    //const int size = 2;std::vector<std::vector<int>> A ={ {2, 3}, {3, 4}}; std::vector<std::vector<int>> B ={ { 1, 0}, { 1, 2}}; std::vector<std::vector<int>> C ={ {6, 5},{8, 7}};
+    const int size = 3;std::vector<std::vector<int>> A ={ {2, 3, 6}, {3, 4, 2}, {5, 4, 7}}; std::vector<std::vector<int>> B ={ { 1, 0, 3}, { 1, 2, 0}, { 7, 1, 9}}; std::vector<std::vector<int>> C ={ {47, 12, 60},{20, 10, 27},{58, 15, 78}};
+    //const int size = 2; std::vector<std::vector<int>> A ={ {2, 3}, {3, 4}}; std::vector<std::vector<int>> B ={ { 1, 0}, { 1, 2}}; std::vector<std::vector<int>> C ={ {6, 5},{8, 7}};
 
-    int size = FREIVALDS_ITERATIONS * 2; std::vector<std::vector<int>> A(size, std::vector<int>(size)), B(size, std::vector<int>(size)), C(size, std::vector<int>(size)); generateRandomInstance(A,B,C,size);
+    //int size = 3; std::vector<std::vector<int>> A(size, std::vector<int>(size)), B(size, std::vector<int>(size)), C(size, std::vector<int>(size)); generateRandomInstance(A,B,C,size); mulMat(A,B,C);
 
-    int freivaldsAvg = 0;
-    int matMulAvg = 0;
+    int trueCounter = 0, falseCounter = 0;
+    /*
+    printMatrix(A);
+    std::cout << std::endl;
+    printMatrix(B);
+    std::cout << std::endl;
+    printMatrix(C);
+    std::cout << std::endl;
+    */
 
-    int a = 50;
-
-    for(int i = 0; i < a; i++){
-        auto ms_int_freivalds = getMatrixComparationTime(A,B,C, freivalds);
-        auto ms_int_matmul = getMatrixComparationTime(A,B,C, matMultComp);
-
-        freivaldsAvg += ms_int_freivalds.count();
-        matMulAvg += ms_int_matmul.count();
+    for(int i = 0; i < 100 ; i++ ){
+        freivalds(A,B,C) ? trueCounter++ : falseCounter++;
     }
 
-    freivaldsAvg /= a; 
-    matMulAvg /= a; 
-
-    float ratio = (float)matMulAvg/(float)freivaldsAvg;
-
-    std::cout << "Freivalds execution time: " << freivaldsAvg<< " Ms\n";
-    std::cout << "Multiplication execution time: " << matMulAvg<< " Ms\n";
-    std::cout << "Ratio: " << ratio<< " Ms\n";
+    std::cout << "Trues: " << trueCounter << " Falses: " << falseCounter;
 }
  
 
