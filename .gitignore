@@ -47,6 +47,7 @@
 *.zip
 **/*Trabalho*
 **/*Entrega*
+**/Emparelhamento_Maximo
 **/*stats*
 
 # IDEs
